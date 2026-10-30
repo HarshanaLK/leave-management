@@ -52,16 +52,6 @@ A full-stack, role-based employee leave management application. Employees can re
 - In case a leave was created but some uploads fail, the retry action only resends failed files to avoid duplicates. Remove failed selections if you want to complete without them.
 - See [docs/QA_REPORT.md](docs/QA_REPORT.md) for reviewed flows, test cases, security observations, and verification limits.
 
-## What this revision fixes
-
-- **MySQL schema validation**: V2 Flyway migration converts `password_reset_tokens.token_hash` from `CHAR(64)` to `VARCHAR(64)`. Keep V1 untouched so Flyway checksum validation remains consistent.
-- **Lazy-loading department bug**: DTO mapping now uses JPA entity getters instead of reading fields directly on uninitialized Hibernate proxies, so an assigned department name is actually loaded. Password reset also updates a managed user rather than writing to an uninitialized proxy.
-- **Missing employee departments**: V3 labels legacy `EMPLOYEE` accounts with `NULL department_id` as **Unassigned**, without inventing their department. Admins can edit these accounts and select the real department. Existing department assignments are preserved.
-- **Permissions**: New `SUPER_ADMIN` role. Super-admin can create, edit and deactivate `ADMIN` accounts. Existing `ADMIN` still manages employee records and approves/rejects leave. `EMPLOYEE` sees only their own requests. API checks enforce roles, not just the UI.
-- **Navigation**: Sidebar `/leaves` link uses exact matching so applying for leave doesn't highlight two links.
-- **Sorting**: Click any **data column** header to sort the complete dataset on the **backend**, ascending/descending. Action columns are not sortable. Sorting supports pagination and filters.
-- **Department management**: Add a department inside the employee/admin editing dialog.
-- **Attachments**: private PDF, JPEG, or PNG files (max 3 files, 5 MB each), available only to the request owner and admins.
 
 ## Roles
 
@@ -76,7 +66,7 @@ A full-stack, role-based employee leave management application. Employees can re
 
 Super administrator `/admins` page lists **ADMIN** accounts, not the root super-admin account. No user can create additional super-admin accounts through the public API. Keep bootstrap credentials secret.
 
-## Prerequisites (Windows, no Docker)
+## Prerequisites 
 
 - Java **JDK 21** (`java -version`)
 - Maven **3.6.3+** (`mvn -version`) installed or configured in PATH
