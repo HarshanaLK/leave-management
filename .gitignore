@@ -1,0 +1,35 @@
+# ==============================
+# Environment & Secrets
+# ==============================
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+
+# ==============================
+# Spring Boot Backend
+# ==============================
+backend/target/
+*.log
+
+# ==============================
+# React Frontend
+# ==============================
+frontend/node_modules/
+frontend/dist/
+
+# ==============================
+# Private Uploaded Documents
+# ==============================
+private-uploads/
+backend/private-uploads/
+
+# ==============================
+# IDE & OS Files
+# ==============================
+.idea/
+.vscode/
+*.iml
+.DS_Store
+Thumbs.db

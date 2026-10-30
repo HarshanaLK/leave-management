@@ -1,0 +1,11 @@
+# Local debugging only: this logs executed SQL and query bind values (including personal data).
+# DO NOT use this profile with production data or commit logs.
+spring:
+  jpa:
+    properties:
+      hibernate:
+        format_sql: true
+logging:
+  level:
+    org.hibernate.SQL: DEBUG
+    org.hibernate.orm.jdbc.bind: TRACE

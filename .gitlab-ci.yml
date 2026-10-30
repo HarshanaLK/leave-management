@@ -1,0 +1,66 @@
+
+stages:
+  - build
+  - deploy
+
+backend_build:
+  stage: build
+  image: maven:3.9-eclipse-temurin-21
+  script:
+    - cd backend
+    - mvn -B clean package
+  artifacts:
+    paths:
+      - backend/target/leave-management-1.0.0.jar
+    expire_in: 1 day
+
+frontend_build:
+  stage: build
+  image: node:22
+  script:
+    - cd frontend
+    - npm ci
+    - npm run qa:rules
+    - npm run build
+  artifacts:
+    paths:
+      - frontend/dist/
+    expire_in: 1 day
+
+deploy_production:
+  stage: deploy
+  image: alpine:3.21
+  needs:
+    - job: backend_build
+      artifacts: true
+    - job: frontend_build
+      artifacts: true
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "main"'
+      when: manual
+  before_script:
+    - apk add --no-cache openssh-client rsync
+    - mkdir -p ~/.ssh
+    - chmod 700 ~/.ssh
+    - cp "$SSH_KNOWN_HOSTS" ~/.ssh/known_hosts
+    - chmod 600 ~/.ssh/known_hosts
+    - chmod 400 "$SSH_PRIVATE_KEY"
+  script:
+    - |
+      ssh -i "$SSH_PRIVATE_KEY" \
+        "$DEPLOY_USER@$DEPLOY_HOST" \
+        "mkdir -p ~/leavehub-ci/dist"
+
+      rsync -az \
+        -e "ssh -i $SSH_PRIVATE_KEY -o IdentitiesOnly=yes" \
+        backend/target/leave-management-1.0.0.jar \
+        "$DEPLOY_USER@$DEPLOY_HOST:leavehub-ci/app.jar"
+
+      rsync -az --delete \
+        -e "ssh -i $SSH_PRIVATE_KEY -o IdentitiesOnly=yes" \
+        frontend/dist/ \
+        "$DEPLOY_USER@$DEPLOY_HOST:leavehub-ci/dist/"
+
+      ssh -i "$SSH_PRIVATE_KEY" \
+        "$DEPLOY_USER@$DEPLOY_HOST" \
+        "sudo /usr/local/sbin/deploy-leavehub"
